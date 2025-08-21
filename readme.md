@@ -7,9 +7,9 @@ Il dataset contiene **33 variabili** relative a caratteristiche personali, compo
 ---
 
 ## 🎯 Obiettivi
-- Analisi del dataset e preprocessing (Flavia De Rinaldis);
-- Creazione di un modello supervisionato per la predizione della valutazione degli studenti (Michele Bruno);
-- Creazione di un modello non supervisionato per identificare studenti con caratteristiche simili (Pasquale Fidanza).
+- Analisi del dataset e preprocessing (Flavia De Rinaldis - branch: main);
+- Creazione di un modello supervisionato per la predizione della valutazione degli studenti (Michele Bruno - branch: main);
+- Creazione di un modello non supervisionato per identificare studenti con caratteristiche simili (Pasquale Fidanza - branch: fidanza).
 
 ---
 
