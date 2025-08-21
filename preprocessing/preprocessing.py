@@ -1,48 +1,60 @@
 import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, StandardScaler
-import matplotlib.pyplot as plt
-import seaborn as sns
-from sklearn.decomposition import PCA
+from typing import Tuple
 
-def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
-
-    # Esplorazione dati
-    print(f"le prime cinque righe sono: {df.head()}")
-    print(df.info())
-    print(df.describe())
-    print(df.isnull().sum())
-    print(f"la forma del DataFrame è: {df.shape}")
-
-    # Pre-processing data
-    le = LabelEncoder()
-    df = df.dropna()  
-    for col in df.select_dtypes(include=['object']).columns:
-        df[col] = le.fit_transform(df[col])
+def preprocess_data(df: pd.DataFrame, test_size: float = 0.2, random_state: int = 42, pass_mark: int = 10
+                   ) -> Tuple[pd.DataFrame, pd.DataFrame, np.ndarray, np.ndarray]:
+    """
+    Preprocess data for binary classification using G3 as target.
+    Suitable for Random Forest (no PCA or scaling needed).
     
-    # Normalizzazione
-    scaler = StandardScaler()
-    df[df.select_dtypes(include=['float64', 'int64']).columns] = scaler.fit_transform(df.select_dtypes(include=['float64', 'int64']))
-
-    # check 
-    print(df.head())
-
-
-    # PCA
-    X = df.drop(columns=['G3'])  # Escludo la colonna target
-    y = df['G3']
-    pca = PCA(n_components=0.8)
-    X_pca = pca.fit_transform(X)
-    explained_variance = pca.explained_variance_ratio_
-    print(f"Varianza spiegata dalle componenti principali: {explained_variance}")
-
-    # X_pca df
-    X_pca = pd.DataFrame(
-        data=X_pca,
-        columns=[f'PC{i+1}' for i in range(X_pca.shape[1])]
-        )
-    X_pca['G3'] = y.values
-    # check df
-    print(f"Shape of PCA DataFrame: {X_pca.shape}")
-    print(X_pca.head())
-
-    return X_pca
+    Args:
+        df: Input DataFrame (must contain 'G3' column)
+        test_size: Proportion of dataset for test split
+        random_state: Random seed for reproducibility
+        pass_mark: Threshold for passing grade (default 10)
+    
+    Returns:
+        X_train, X_test, y_train, y_test: Cleaned and encoded training and test sets
+    """
+    
+    print(f"Le prime cinque righe sono:\n{df.head()}")
+    print(f"\nInfo del DataFrame:")
+    print(df.info())
+    print(f"\nValori mancanti:\n{df.isnull().sum()}")
+    print(f"\nLa forma del DataFrame è: {df.shape}")
+    df_clean = df.dropna().copy()
+    print(f"\nDopo rimozione valori mancanti: {df_clean.shape}")
+    
+        
+    X = df_clean.drop(columns=['G3'])
+    y = (df_clean['G3'] >= pass_mark).astype(int)  # binary target
+    
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=test_size, random_state=random_state, stratify=y
+    )
+    
+    print(f"\nTrain set shape: {X_train.shape}")
+    print(f"Test set shape: {X_test.shape}")
+    print(f"Distribuzione classi nel train set:\n{np.bincount(y_train)}")
+    
+    # Encode categorical features
+    categorical_cols = X_train.select_dtypes(include=['object']).columns.tolist()
+    label_encoders = {}
+    
+    if categorical_cols:
+        print(f"\nColonne categoriche da codificare: {categorical_cols}")
+        for col in categorical_cols:
+            le = LabelEncoder()
+            X_train[col] = le.fit_transform(X_train[col].astype(str))
+            label_encoders[col] = le
+            
+            X_test_col_str = X_test[col].astype(str)
+            mask = X_test_col_str.isin(le.classes_)
+            X_test[col] = 0  # unseen categories → 0
+            X_test.loc[mask, col] = le.transform(X_test_col_str[mask])
+    
+    
+    return X_train, X_test, y_train, y_test
