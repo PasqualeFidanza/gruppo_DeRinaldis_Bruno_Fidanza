@@ -2,6 +2,7 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.decomposition import PCA
 
 def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
 
@@ -25,16 +26,23 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
     # check 
     print(df.head())
 
-    # matrice di correlazione
-    corr = df.corr()
-    corr_target = corr['G3'].sort_values(ascending=False)
-    print(corr_target)
-    #seleziono quelle più correlate
-    strong_corr = corr_target[abs(corr_target) > 0.2]
-    # Heatmap
-    plt.figure(figsize=(10, 8))
-    sns.heatmap(df[strong_corr.index].corr(), annot=True, fmt=".2f", cmap='coolwarm')
-    plt.title("Matrice di Correlazione")
-    plt.show()
 
-    return df
+    # PCA
+    X = df.drop(columns=['G3'])  # Escludo la colonna target
+    y = df['G3']
+    pca = PCA(n_components=0.8)
+    X_pca = pca.fit_transform(X)
+    explained_variance = pca.explained_variance_ratio_
+    print(f"Varianza spiegata dalle componenti principali: {explained_variance}")
+
+    # X_pca df
+    X_pca = pd.DataFrame(
+        data=X_pca,
+        columns=[f'PC{i+1}' for i in range(X_pca.shape[1])]
+        )
+    X_pca['G3'] = y.values
+    # check df
+    print(f"Shape of PCA DataFrame: {X_pca.shape}")
+    print(X_pca.head())
+
+    return X_pca
