@@ -6,29 +6,33 @@ def clustering(df):
     to_cluster = df.drop('G3', axis=1)
 
     k_means = KMeans(n_clusters=2)
-    dbscan = DBSCAN(eps = 0.7, min_samples=10)
+    dbscan = DBSCAN(eps=0.7, min_samples=4)
 
     labels_dbscan = dbscan.fit_predict(to_cluster)
     labels_kmeans = k_means.fit_predict(to_cluster)
 
-    # Analisi 2D
-    plt.figure(figsize=(12,5))
+    fig = plt.figure(figsize=(14,6))
 
     # KMeans
-    plt.subplot(1,2,1)
-    plt.scatter(to_cluster['PC1'], to_cluster['PC2'], c=labels_kmeans, cmap='viridis', s=50)
-    plt.title("KMeans Clustering")
-    plt.xlabel("PC1")
-    plt.ylabel("PC2")
+    ax1 = fig.add_subplot(121, projection='3d')
+    ax1.scatter(to_cluster['PC1'], to_cluster['PC2'], to_cluster['PC3'], 
+                c=labels_kmeans, cmap='viridis', s=50)
+    ax1.set_title("KMeans Clustering")
+    ax1.set_xlabel("PC1")
+    ax1.set_ylabel("PC2")
+    ax1.set_zlabel("PC3")
 
     # DBSCAN
-    plt.subplot(1,2,2)
-    plt.scatter(to_cluster['PC1'], to_cluster['PC2'], c=labels_dbscan, cmap='viridis', s=50)
-    plt.title("DBSCAN Clustering")
-    plt.xlabel("PC1")
-    plt.ylabel("PC2")
+    ax2 = fig.add_subplot(122, projection='3d')
+    ax2.scatter(to_cluster['PC1'], to_cluster['PC2'], to_cluster['PC3'], 
+                c=labels_dbscan, cmap='viridis', s=50)
+    ax2.set_title("DBSCAN Clustering")
+    ax2.set_xlabel("PC1")
+    ax2.set_ylabel("PC2")
+    ax2.set_zlabel("PC3")
 
     plt.show()
+
 
     return labels_kmeans, labels_dbscan
 

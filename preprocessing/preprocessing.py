@@ -20,6 +20,7 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
         df[col] = le.fit_transform(df[col])
     
     # Normalizzazione
+
     scaler = StandardScaler()
     df[df.select_dtypes(include=['float64', 'int64']).columns] = scaler.fit_transform(df.select_dtypes(include=['float64', 'int64']))
 
@@ -30,7 +31,7 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
     # PCA
     X = df.drop(columns=['G3'])  # Escludo la colonna target
     y = df['G3']
-    pca = PCA(n_components=2)
+    pca = PCA(n_components=3)
     X_pca = pca.fit_transform(X)
     explained_variance = pca.explained_variance_ratio_
     print(f"Varianza spiegata dalle componenti principali: {explained_variance}")
@@ -41,8 +42,9 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
         columns=[f'PC{i+1}' for i in range(X_pca.shape[1])]
         )
     X_pca['G3'] = y.values
+
     # check df
     print(f"Shape of PCA DataFrame: {X_pca.shape}")
     print(X_pca.head())
-
+    print(pca.feature_names_in_)
     return X_pca
