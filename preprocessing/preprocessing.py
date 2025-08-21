@@ -30,7 +30,7 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
     # PCA
     X = df.drop(columns=['G3'])  # Escludo la colonna target
     y = df['G3']
-    pca = PCA(n_components=0.8)
+    pca = PCA(n_components=2)
     X_pca = pca.fit_transform(X)
     explained_variance = pca.explained_variance_ratio_
     print(f"Varianza spiegata dalle componenti principali: {explained_variance}")
